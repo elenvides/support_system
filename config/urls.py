@@ -23,13 +23,8 @@ from django.urls import path
 
 
 def foo(request: WSGIRequest):
-    data = {
-        "message": "Hello from foo()"
-    }
-    return HttpResponse(
-        content_type="application/json",
-        content=json.dumps(data)
-    )
+    data = {"message": "Hello from foo()"}
+    return HttpResponse(content_type="application/json", content=json.dumps(data))
 
 
 urlpatterns = [
