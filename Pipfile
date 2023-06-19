@@ -7,9 +7,11 @@ name = "pypi"
 django = "~=4.2"
 
 [dev-packages]
-black = "*"
-flake8 = "*"
-isort = "*"
+black = "~=23.3"
+flake8 = "~=6.0"
+isort = "~=5.12"
+pytest = "~=7.3"
+requests = "*"
 
 [requires]
 python_version = "3.11"
