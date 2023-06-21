@@ -1,7 +1,0 @@
-GET http://localhost:8000/api/pokemon/{{pokemon_name}} HTTP/1.1
-content-type: application/json
-
-###
-
-GET http://localhost:8000/api/pokemon/mobile/{{pokemon_name}} HTTP/1.1
-content-type: application/json
