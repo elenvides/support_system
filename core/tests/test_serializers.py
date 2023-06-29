@@ -2,14 +2,10 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 
-from core.serializers import (
-    LoginRequestSerializer,
-    LoginResponseSerializer,
-    UserCreateRequestSerializer,
-    UserCreateResponseSerializer,
-    UserCreateSerializer,
-    UserPublicSerializer,
-)
+from core.serializers import (LoginRequestSerializer, LoginResponseSerializer,  # isort:skip # noqa
+                              UserCreateRequestSerializer,  # isort:skip # noqa
+                              UserCreateResponseSerializer,  # isort:skip # noqa
+                              UserCreateSerializer, UserPublicSerializer)  # isort:skip # noqa
 
 User = get_user_model()
 
