@@ -4,6 +4,6 @@ from django.urls import path
 from core.api import create_user
 
 urlpatterns = [
-    path("admin", admin.site.urls),
-    path("users", create_user),
+    path("admin/", admin.site.urls),
+    path("users/", create_user),
 ]
