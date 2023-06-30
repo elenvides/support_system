@@ -1,33 +1,34 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from core.constants import Role
+
 User = get_user_model()
 
 
-class UserCreateSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=150)
-    password = serializers.CharField(max_length=250)
+# class UserCreateSerializer(serializers.Serializer):
+#     email = serializers.EmailField(max_length=150)
+#     password = serializers.CharField(max_length=250)
+#
+#
+# class UserPublicSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ["id", "email", "first_name", "last_name", "role"]
 
 
-class UserPublicSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "email", "first_name", "last_name", "role"]
-
-
-# region HW
 class UserCreateRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=150)
     password = serializers.CharField()
     first_name = serializers.CharField(max_length=100, required=False)
     last_name = serializers.CharField(max_length=100, required=False)
-    role = serializers.IntegerField()
+    role = serializers.IntegerField(default=Role.USER)
 
 
 class UserCreateResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name"]
+        fields = ["id", "email", "first_name", "last_name", "role"]
 
 
 class LoginRequestSerializer(serializers.Serializer):
@@ -36,11 +37,5 @@ class LoginRequestSerializer(serializers.Serializer):
 
 
 class LoginResponseSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
-    email = serializers.EmailField(max_length=150)
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
+    user = UserCreateResponseSerializer()
     token = serializers.CharField()
-
-
-# endregion HW

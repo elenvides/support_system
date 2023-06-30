@@ -5,7 +5,11 @@ from django.http import HttpResponse, JsonResponse
 
 from core.errors import SerializerError
 from core.models import User
-from core.serializers import UserCreateSerializer, UserPublicSerializer
+
+# isort: off
+from core.serializers import UserCreateRequestSerializer, UserCreateResponseSerializer
+
+# isort: on
 
 
 def base_error_handler(func: Callable):
@@ -33,12 +37,12 @@ def create_user(request):
     if request.method != "POST":
         raise ValueError("Only POST method is allowed")
 
-    user_create_serializer = UserCreateSerializer(data=json.loads(request.body))
+    user_create_serializer = UserCreateRequestSerializer(data=json.loads(request.body))
     is_valid = user_create_serializer.is_valid()
     if not is_valid:
         raise SerializerError(user_create_serializer)
 
     user = User.objects.create_user(**user_create_serializer.validated_data)
-    user_public_serializer = UserPublicSerializer(user)
+    user_public_serializer = UserCreateResponseSerializer(user)
 
     return JsonResponse(user_public_serializer.data)

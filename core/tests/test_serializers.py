@@ -1,6 +1,7 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.exceptions import ValidationError
 
 # isort: off
 from core.serializers import (
@@ -8,47 +9,11 @@ from core.serializers import (
     LoginResponseSerializer,
     UserCreateRequestSerializer,
     UserCreateResponseSerializer,
-    UserCreateSerializer,
-    UserPublicSerializer,
 )
 
 # isort: on
 
 User = get_user_model()
-
-
-class UserCreateSerializerTestCase(TestCase):
-    def test_valid_serializer(self):
-        data = {"email": "test@example.com", "password": "testpassword"}
-        serializer = UserCreateSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-
-    def test_invalid_email_serializer(self):
-        data = {"email": "invalid-email", "password": "testpassword"}
-        serializer = UserCreateSerializer(data=data)
-        with self.assertRaises(ValidationError):
-            serializer.is_valid(raise_exception=True)
-
-    def test_missing_fields_serializer(self):
-        data = {"email": "test@example.com"}
-        serializer = UserCreateSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-
-
-class UserPublicSerializerTestCase(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(email="test@example.com", role=2)
-
-    def test_valid_serializer(self):
-        serializer = UserPublicSerializer(self.user)
-        expected_data = {
-            "id": self.user.id,
-            "email": "test@example.com",
-            "first_name": None,
-            "last_name": None,
-            "role": 2,
-        }
-        self.assertEqual(serializer.data, expected_data)
 
 
 class UserCreateRequestSerializerTest(TestCase):
@@ -58,7 +23,7 @@ class UserCreateRequestSerializerTest(TestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_invalid_serializer_missing_field(self):
-        data = {"email": "test@example.com", "password": "password123"}
+        data = {"email": "test@example.com"}
         serializer = UserCreateRequestSerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
@@ -74,6 +39,7 @@ class UserCreateResponseSerializerTest(TestCase):
             "email": "test@example.com",
             "first_name": None,
             "last_name": None,
+            "role": 3,
         }
         self.assertDictEqual(serializer.data, expected_data)
 
@@ -92,13 +58,25 @@ class LoginRequestSerializerTest(TestCase):
 
 class LoginResponseSerializerTest(TestCase):
     def test_serializer(self):
-        data = {
-            "user_id": 1,
-            "email": "test@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
+        user_obj = User.objects.create(
+            email="test@example.com", first_name="John", last_name="Doe", role=1
+        )
+        input_data = {"user": user_obj, "token": "123abc"}
+
+        serializer = LoginResponseSerializer(input_data)
+
+        expected_data = {
+            "user": {
+                "id": user_obj.id,
+                "email": "test@example.com",
+                "first_name": "John",
+                "last_name": "Doe",
+                "role": 1,
+            },
             "token": "123abc",
         }
-        serializer = LoginResponseSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertDictEqual(serializer.data, data)
+
+        self.assertEqual(
+            json.dumps(serializer.data, sort_keys=True),
+            json.dumps(expected_data, sort_keys=True),
+        )
