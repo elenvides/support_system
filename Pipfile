@@ -4,8 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "~=4.2"
+django = "~=4.1.4"
 djangorestframework = "~=3.14"
+djangorestframework-simplejwt = "~=5.2"
 
 [dev-packages]
 black = "~=23.3"
@@ -13,6 +14,8 @@ flake8 = "~=6.0"
 isort = "~=5.12"
 pytest = "~=7.3"
 requests = "*"
+django-stubs = "*"
+djangorestframework-stubs = "*"
 
 [requires]
 python_version = "3.11"
