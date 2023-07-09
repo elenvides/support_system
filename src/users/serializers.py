@@ -2,12 +2,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
-from core.constants import Role
+from users.constants import Role
 
 User = get_user_model()
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "password"]
@@ -18,12 +18,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def to_representation(self, instance: User):
-        serializer = UserCreateResponseSerializer(instance)
-        return serializer.data
 
-
-class UserCreateResponseSerializer(serializers.ModelSerializer):
+class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email"]
