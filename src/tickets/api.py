@@ -3,8 +3,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from tickets.models import Ticket
-from tickets.permissions import (CanTakeTicket, IsOwner, RoleIsAdmin,
-                                 RoleIsManager, RoleIsUser)
+from tickets.permissions import (
+    CanTakeTicket,
+    IsOwner,
+    RoleIsAdmin,
+    RoleIsManager,
+    RoleIsUser,
+)
 from tickets.serializers import TicketSerializer, TicketTakeSerializer
 
 
