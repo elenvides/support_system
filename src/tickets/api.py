@@ -3,14 +3,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from tickets.models import Ticket
-from tickets.permissions import (
-    CanTakeTicket,
-    IsOwner,
-    RoleIsAdmin,
-    RoleIsManager,
-    RoleIsUser,
-)
-from tickets.serializers import TicketAssignSerializer, TicketSerializer
+from tickets.permissions import (CanTakeTicket, IsOwner, RoleIsAdmin,
+                                 RoleIsManager, RoleIsUser)
+from tickets.serializers import TicketSerializer, TicketTakeSerializer
 
 
 class TicketAPIViewSet(ModelViewSet):
@@ -42,7 +37,7 @@ class TicketAPIViewSet(ModelViewSet):
     def take(self, request, pk):
         ticket = self.get_object()
 
-        serializer = TicketAssignSerializer(data={"manager_id": request.user.id})
+        serializer = TicketTakeSerializer(data={"manager_id": request.user.id})
         serializer.is_valid()
         ticket = serializer.assign(ticket)
 
