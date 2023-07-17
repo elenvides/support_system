@@ -106,12 +106,12 @@ class MessageListCreateAPIView(ListCreateAPIView):
         return ticket.messages.all()
 
     def post(self, request, ticket_id: int):
-        ticket = self.get_ticket(request.user, ticket_id)
-
         if request.user.role == Role.ADMIN:
             raise exceptions.PermissionDenied(
                 "Admins are not allowed to create messages."
             )
+
+        ticket = self.get_ticket(request.user, ticket_id)
 
         payload = {
             "text": request.data["text"],
