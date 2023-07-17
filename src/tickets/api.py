@@ -90,17 +90,30 @@ class MessageListCreateAPIView(ListCreateAPIView):
     serializer_class = MessageSerializer
     lookup_field = "ticket_id"
 
+    @staticmethod
+    def get_ticket(user: User, ticket_id: int) -> Ticket:
+        """Get tickets for current user."""
+        if user.role == Role.ADMIN:
+            tickets = Ticket.objects.all()
+        else:
+            tickets = Ticket.objects.filter(Q(user=user) | Q(manager=user))
+        return get_object_or_404(tickets, id=ticket_id)
+
     def get_queryset(self):
         ticket_id = self.kwargs[self.lookup_field]
         ticket = get_object_or_404(Ticket, id=ticket_id)
 
-        if not (
-            ticket.user == self.request.user
-            or (
-                self.request.user.role in [Role.MANAGER, Role.ADMIN]
+        def has_permission():
+            is_owner = ticket.user == self.request.user
+            is_assigned_manager = (
+                self.request.user.role == Role.MANAGER
                 and ticket.manager == self.request.user
             )
-        ):
+            is_admin = self.request.user.role == Role.ADMIN
+
+            return is_owner or is_assigned_manager or is_admin
+
+        if not has_permission():
             raise exceptions.PermissionDenied(
                 "Only the owner, the assigned manager or an admin can view messages for this ticket."
             )
@@ -108,7 +121,7 @@ class MessageListCreateAPIView(ListCreateAPIView):
         return ticket.messages.all()
 
     def post(self, request, ticket_id: int):
-        ticket = self.get_object()
+        ticket = self.get_ticket(request.user, ticket_id)
 
         if request.user.role == Role.ADMIN:
             raise exceptions.PermissionDenied(
