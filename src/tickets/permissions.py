@@ -1,7 +1,8 @@
 from rest_framework import exceptions
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import BasePermission
 
-from tickets.models import Ticket
+from tickets.models import Ticket, Message
 from users.constants import Role
 
 

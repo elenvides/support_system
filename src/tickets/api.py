@@ -1,9 +1,17 @@
 from django.db.models import Q
+from django.contrib.auth import get_user_model
+from rest_framework import exceptions
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from tickets.models import Ticket
+from tickets.models import Ticket, Message
+
 from tickets.permissions import (
     CanTakeTicket,
     IsOwner,
@@ -14,9 +22,12 @@ from tickets.permissions import (
 from tickets.serializers import (
     TicketAssignSerializer,
     TicketSerializer,
-    TicketTakeSerializer,
+    TicketTakeSerializer, MessageSerializer,
 )
 from users.constants import Role
+
+
+User = get_user_model()
 
 
 class TicketAPIViewSet(ModelViewSet):
@@ -79,9 +90,36 @@ class TicketAPIViewSet(ModelViewSet):
         return Response(TicketSerializer(ticket).data)
 
 
-# class MessageListCreateAPIView(ListCreateAPIView):
-#     serializer_class = TicketSerializer
-#
-#     def get_queryset(self):
-#         # TODO: Start from here
-#         raise NotImplementedError
+class MessageListCreateAPIView(ListCreateAPIView):
+    serializer_class = MessageSerializer
+    lookup_field = "ticket_id"
+
+    def get_queryset(self):
+        ticket_id = self.kwargs[self.lookup_field]
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+
+        if not (ticket.user == self.request.user or (
+                self.request.user.role in [Role.MANAGER, Role.ADMIN] and ticket.manager == self.request.user)):
+            raise exceptions.PermissionDenied(
+                "Only the owner, the assigned manager or an admin can view messages for this ticket.")
+
+        return ticket.messages.all()
+
+    def post(self, request, ticket_id: int):
+        ticket = self.get_object()
+
+        if request.user.role == Role.ADMIN:
+            raise exceptions.PermissionDenied("Admins are not allowed to create messages.")
+
+        payload = {
+            "text": request.data["text"],
+            "ticket": ticket.id,
+        }
+        serializer = self.get_serializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

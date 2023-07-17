@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from tickets.models import Ticket
+from tickets.models import Ticket, Message
 from users.constants import Role
 
 User = get_user_model()
@@ -67,3 +67,13 @@ class TicketAssignSerializer(BaseTicketSerializer):
         ticket.save()
 
         return ticket
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Message
+        # fields = ["id", "text", "user", "ticket", "timestamp"]
+        fields = "__all__"
+        read_only_fields = ["id", "timestamp"]
