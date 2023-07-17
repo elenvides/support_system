@@ -94,11 +94,10 @@ class MessageListCreateAPIView(ListCreateAPIView):
     def get_ticket(user: User, ticket_id: int) -> Ticket:
         """Get tickets for current user."""
         if user.role == Role.ADMIN:
-            return get_object_or_404(Ticket, id=ticket_id)
+            tickets = Ticket.objects.all()
         else:
-            return get_object_or_404(
-                Ticket.objects.filter(Q(user=user) | Q(manager=user), id=ticket_id)
-            )
+            tickets = Ticket.objects.filter(Q(user=user) | Q(manager=user))
+        return get_object_or_404(tickets, id=ticket_id)
 
     def get_queryset(self):
         ticket_id = self.kwargs[self.lookup_field]
