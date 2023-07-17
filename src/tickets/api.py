@@ -101,22 +101,7 @@ class MessageListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         ticket_id = self.kwargs[self.lookup_field]
-        ticket = get_object_or_404(Ticket, id=ticket_id)
-
-        def has_permission():
-            is_owner = ticket.user == self.request.user
-            is_assigned_manager = (
-                self.request.user.role == Role.MANAGER
-                and ticket.manager == self.request.user
-            )
-            is_admin = self.request.user.role == Role.ADMIN
-
-            return is_owner or is_assigned_manager or is_admin
-
-        if not has_permission():
-            raise exceptions.PermissionDenied(
-                "Only the owner, the assigned manager or an admin can view messages for this ticket."
-            )
+        ticket = self.get_ticket(self.request.user, ticket_id)
 
         return ticket.messages.all()
 
