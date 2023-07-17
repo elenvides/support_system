@@ -70,8 +70,9 @@ class TicketAPIViewSet(ModelViewSet):
     @action(detail=True, methods=["put"])
     def assign(self, request, pk):
         ticket = self.get_object()
+        new_manager_id = request.data.get("manager_id")
 
-        serializer = TicketAssignSerializer(data=request.data)
+        serializer = TicketAssignSerializer(data={"manager_id": new_manager_id})
         if serializer.is_valid(raise_exception=True):
             ticket = serializer.assign(ticket)
 
