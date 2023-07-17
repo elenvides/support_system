@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from tickets.models import Ticket, Message
+from tickets.models import Message, Ticket
 from users.constants import Role
 
 User = get_user_model()

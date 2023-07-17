@@ -1,17 +1,13 @@
-from django.db.models import Q
 from django.contrib.auth import get_user_model
-from rest_framework import exceptions
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import exceptions, status
 from rest_framework.decorators import action
-from rest_framework.decorators import action
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from tickets.models import Ticket, Message
-
+from tickets.models import Ticket
 from tickets.permissions import (
     CanTakeTicket,
     IsOwner,
@@ -20,12 +16,12 @@ from tickets.permissions import (
     RoleIsUser,
 )
 from tickets.serializers import (
+    MessageSerializer,
     TicketAssignSerializer,
     TicketSerializer,
-    TicketTakeSerializer, MessageSerializer,
+    TicketTakeSerializer,
 )
 from users.constants import Role
-
 
 User = get_user_model()
 
@@ -98,10 +94,16 @@ class MessageListCreateAPIView(ListCreateAPIView):
         ticket_id = self.kwargs[self.lookup_field]
         ticket = get_object_or_404(Ticket, id=ticket_id)
 
-        if not (ticket.user == self.request.user or (
-                self.request.user.role in [Role.MANAGER, Role.ADMIN] and ticket.manager == self.request.user)):
+        if not (
+            ticket.user == self.request.user
+            or (
+                self.request.user.role in [Role.MANAGER, Role.ADMIN]
+                and ticket.manager == self.request.user
+            )
+        ):
             raise exceptions.PermissionDenied(
-                "Only the owner, the assigned manager or an admin can view messages for this ticket.")
+                "Only the owner, the assigned manager or an admin can view messages for this ticket."
+            )
 
         return ticket.messages.all()
 
@@ -109,7 +111,9 @@ class MessageListCreateAPIView(ListCreateAPIView):
         ticket = self.get_object()
 
         if request.user.role == Role.ADMIN:
-            raise exceptions.PermissionDenied("Admins are not allowed to create messages.")
+            raise exceptions.PermissionDenied(
+                "Admins are not allowed to create messages."
+            )
 
         payload = {
             "text": request.data["text"],
