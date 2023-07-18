@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.generics import ListCreateAPIView
@@ -28,6 +30,7 @@ User = get_user_model()
 
 class TicketAPIViewSet(ModelViewSet):
     serializer_class = TicketSerializer
+    http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
         user = self.request.user
@@ -64,6 +67,21 @@ class TicketAPIViewSet(ModelViewSet):
 
         return [permission() for permission in permission_classes]
 
+    @swagger_auto_schema(
+        method="put",
+        operation_summary="Take ticket",
+        operation_description="Take the ticket with provided ticket id",
+        request_body=no_body,
+        responses={200: openapi.Response("response description", TicketSerializer)},
+        manual_parameters=[
+            openapi.Parameter(
+                "id",
+                openapi.IN_PATH,
+                description="id of the ticket to be taken",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    )
     @action(detail=True, methods=["put"])
     def take(self, request, pk):
         ticket = self.get_object()
@@ -74,6 +92,21 @@ class TicketAPIViewSet(ModelViewSet):
 
         return Response(TicketSerializer(ticket).data)
 
+    @swagger_auto_schema(
+        method="put",
+        operation_summary="Assign ticket",
+        operation_description="Assign a manager to a ticket.",
+        request_body=TicketAssignSerializer,
+        responses={200: openapi.Response("response description", TicketSerializer)},
+        manual_parameters=[
+            openapi.Parameter(
+                "id",
+                openapi.IN_PATH,
+                description="ID of the ticket to be assigned to a manager",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    )
     @action(detail=True, methods=["put"])
     def assign(self, request, pk):
         ticket = self.get_object()

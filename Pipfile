@@ -7,6 +7,7 @@ name = "pypi"
 django = "~=4.1.4"
 djangorestframework = "~=3.14"
 djangorestframework-simplejwt = "~=5.2"
+gunicorn = "~=20.1"
 
 [dev-packages]
 black = "~=23.3"
@@ -16,6 +17,7 @@ pytest = "~=7.3"
 requests = "*"
 django-stubs = "*"
 djangorestframework-stubs = "*"
+drf-yasg = "*"
 
 [requires]
 python_version = "3.11"
