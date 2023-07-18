@@ -10,8 +10,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from config.celery import celery_app
 
+from config.celery import celery_app
 from tickets.models import Ticket
 from tickets.permissions import (
     CanTakeTicket,
