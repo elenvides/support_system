@@ -1,5 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from rest_framework import exceptions, status
 from rest_framework.decorators import action
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -12,11 +16,14 @@ from tickets.permissions import (
     RoleIsUser,
 )
 from tickets.serializers import (
+    MessageSerializer,
     TicketAssignSerializer,
     TicketSerializer,
     TicketTakeSerializer,
 )
 from users.constants import Role
+
+User = get_user_model()
 
 
 class TicketAPIViewSet(ModelViewSet):
@@ -79,9 +86,43 @@ class TicketAPIViewSet(ModelViewSet):
         return Response(TicketSerializer(ticket).data)
 
 
-# class MessageListCreateAPIView(ListCreateAPIView):
-#     serializer_class = TicketSerializer
-#
-#     def get_queryset(self):
-#         # TODO: Start from here
-#         raise NotImplementedError
+class MessageListCreateAPIView(ListCreateAPIView):
+    serializer_class = MessageSerializer
+    lookup_field = "ticket_id"
+
+    @staticmethod
+    def get_ticket(user: User, ticket_id: int) -> Ticket:
+        """Get tickets for current user."""
+        if user.role == Role.ADMIN:
+            return get_object_or_404(Ticket, id=ticket_id)
+        else:
+            return get_object_or_404(
+                Ticket.objects.filter(Q(user=user) | Q(manager=user), id=ticket_id)
+            )
+
+    def get_queryset(self):
+        ticket_id = self.kwargs[self.lookup_field]
+        ticket = self.get_ticket(self.request.user, ticket_id)
+
+        return ticket.messages.all()
+
+    def post(self, request, ticket_id: int):
+        if request.user.role == Role.ADMIN:
+            raise exceptions.PermissionDenied(
+                "Admins are not allowed to create messages."
+            )
+
+        ticket = self.get_ticket(request.user, ticket_id)
+
+        payload = {
+            "text": request.data["text"],
+            "ticket": ticket.id,
+        }
+        serializer = self.get_serializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
