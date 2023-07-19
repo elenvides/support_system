@@ -1,3 +1,5 @@
+from time import sleep
+
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -9,6 +11,7 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from config.celery import celery_app
 from tickets.models import Ticket
 from tickets.permissions import (
     CanTakeTicket,
@@ -28,6 +31,13 @@ from users.constants import Role
 User = get_user_model()
 
 
+@celery_app.task
+def send_email():
+    print("📭 Sending email")
+    sleep(10)
+    print("✅ Email sent")
+
+
 class TicketAPIViewSet(ModelViewSet):
     serializer_class = TicketSerializer
     http_method_names = ["get", "post", "put", "delete"]
@@ -35,6 +45,8 @@ class TicketAPIViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         all_tickets = Ticket.objects.all()
+
+        send_email.delay()
 
         if user.role == Role.ADMIN:
             return all_tickets
