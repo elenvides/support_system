@@ -1,7 +1,7 @@
 from datetime import timedelta
-from pathlib import Path
 from distutils.util import strtobool
 from os import getenv
+from pathlib import Path
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = SRC_DIR.parent
