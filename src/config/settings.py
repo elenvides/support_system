@@ -1,11 +1,13 @@
 from datetime import timedelta
 from pathlib import Path
+from distutils.util import strtobool
+from os import getenv
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = SRC_DIR.parent
 
-SECRET_KEY = "django-insecure-a#(v7c0%lcif3+a(b5ena#n_12zlsuv*k#&pev9t_hjx*3ugi("
-DEBUG = True
+SECRET_KEY = getenv("DJANGO_SECRET_KEY", default="invalid")
+DEBUG = strtobool(getenv("DJANGO_DEBUG", default="false"))
 ALLOWED_HOSTS = ["*"]
 
 
@@ -128,9 +130,13 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        seconds=int(getenv("JWT_ACCESS_TOKEN_LIFETIME", default=100))
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(getenv("JWT_REFRESH_TOKEN_LIFETIME", default=1))
+    ),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-CELERY_BROKER_URL = "redis://broker:6379/0"
+CELERY_BROKER_URL = getenv("CELERY_BROKER_URL", default="redis://broker:6379/0")
